@@ -1,1 +1,122 @@
 Home tasks for Module 02
+--------------------------------------------------------------------------------------------------------------
+--2.1.1--
+
+SELECT o.OrderID, o.ShippedDate, o.ShipVia
+FROM Orders o
+WHERE o.ShipVia >=2 
+	AND o.ShippedDate >= convert(DATETIME,'5/6/1998',101)
+--comments - NULL lines are not presented as we have default SET ANSI_NULLS ONN and NULLs in comparison to any 
+--value is UNKNOWN
+
+--2.1.2--
+SELECT o.OrderID,
+	CASE
+	WHEN o.ShippedDate IS NULL THEN  'Not Shipped' 
+	ELSE '-'
+	END AS ShippedDate
+FROM Orders o
+WHERE o.ShippedDate IS NULL
+
+--2.1.3--
+SET ANSI_NULLS OFF 
+SELECT o.OrderID AS 'Order Number',
+	CASE
+	WHEN o.ShippedDate IS NULL THEN  'Not Shipped' 
+	ELSE '-'
+	END AS 'Shipped Date'
+FROM Orders o
+WHERE  o.ShippedDate > convert(DATETIME,'5/6/1998',101)
+	OR O.ShippedDate =NULL
+
+
+--2.2.1--
+SELECT c.ContactName, c.Country
+FROM Customers c
+WHERE c.Country IN ('USA','Canada')
+ORDER BY c.ContactName, c.Country
+
+
+--2.2.2--
+SELECT c.ContactName, c.Country
+FROM Customers c
+WHERE c.Country NOT IN ('USA','Canada')
+ORDER BY c.ContactName
+
+--2.2.3--
+SELECT DISTINCT c.Country
+FROM Customers c
+ORDER BY c.Country DESC
+
+--2.3.1--
+SELECT DISTINCT o.OrderID
+FROM [Order Details] o
+WHERE o.Quantity BETWEEN 3 AND 10
+
+--2.3.2--
+SELECT c.CustomerID, c.Country
+FROM Customers c
+WHERE LEFT(c.Country,1) BETWEEN 'B' AND 'G'
+ORDER BY c.Country
+
+--2.3.3--
+SELECT c.CustomerID, c.Country
+FROM Customers c
+WHERE c.Country LIKE '[b-g]%'
+ORDER BY c.Country
+
+
+--2.4.1--
+SELECT p.ProductName
+FROM Products p
+WHERE p.ProductName LIKE '%cho%'
+	AND p.ProductName LIKE '%olade%'
+	
+--2.4.2--
+SELECT DISTINCT(left(LastName,1)) AS 'A_index'
+FROM Employees
+ORDER BY 'A_index'
+
+
+--2.5.1--
+SELECT e.LastName,t.TerritoryDescription
+FROM EmployeeTerritories et
+	JOIN Territories t ON t.TerritoryID = et.TerritoryID
+	JOIN Region r ON t.RegionID = r.RegionID
+	JOIN Employees e ON e.EmployeeID = et.EmployeeID
+WHERE r.RegionDescription = 'Western'
+
+
+--2.5.2--
+SELECT c.CompanyName,sum(CASE WHEN o.OrderID IS NULL THEN 0 ELSE 1 end) AS Qty
+FROM Customers c
+LEFT JOIN Orders o ON o.CustomerID = c.CustomerID
+GROUP BY c.CompanyName
+ORDER BY 2
+
+
+--2.5.3--
+SELECT s.CompanyName
+FROM Suppliers s
+WHERE s.SupplierID IN(
+	SELECT p.SupplierID
+	FROM Products p
+	WHERE p.UnitsInStock=0)
+
+
+--2.5.4--
+SELECT e.FirstName+' '+e.LastName AS FullName
+FROM Employees e
+WHERE e.EmployeeID IN(
+	SELECT O.EmployeeID
+	FROM Orders O
+	GROUP BY o.EmployeeID
+	HAVING COUNT(*)>150)
+
+--2.5.5--
+SELECT c.CompanyName
+FROM Customers c
+WHERE NOT EXISTS(
+	SELECT o.CustomerID
+	FROM Orders o
+	WHERE o.CustomerID=c.customerID)
