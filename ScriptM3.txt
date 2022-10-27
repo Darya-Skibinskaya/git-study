@@ -1,1 +1,99 @@
 Module 03 home task
+--3.1.1--
+SELECT convert(MONEY,round(sum(od.UnitPrice*(1-od.Discount)*od.Quantity),2),1) AS Totals_convert
+FROM [Order Details] od
+
+--3.1.2--
+SELECT count(*)-count(o.ShippedDate) AS 'Quantity of not delivered orders'
+FROM Orders o
+
+--3.1.3--
+SELECT count(DISTINCT customerID) AS 'Quantity of customers'
+FROM Orders
+
+--3.2.1--
+SELECT year(o.OrderDate) AS Year,count(*) AS Total
+FROM Orders o
+GROUP BY year(o.OrderDate)
+--comments - cannot change the format for Year
+--to check--
+SELECT count(*) AS 'to check'
+FROM Orders
+
+--3.2.2--
+SELECT
+	(SELECT e.LastName+'&'+e.FirstName
+	FROM Employees e
+	WHERE e.EmployeeID = o.EmployeeID) AS Seller,
+	count(*) AS Amount
+FROM Orders o
+GROUP BY o.EmployeeID
+ORDER BY count(*) DESC
+--not recommended--
+
+SELECT (e.LastName+'&'+e.FirstName) AS Seller, count(*) AS Amount
+FROM Orders o
+JOIN Employees e ON e.EmployeeID = o.EmployeeID  
+GROUP BY (e.LastName+'&'+e.FirstName)
+ORDER BY count(*) DESC
+
+--3.2.3--
+SELECT 
+IIF(grouping(e.LastName+' '+e.FirstName)=0,(e.LastName+' '+e.FirstName),'ALL') AS Seller, 
+iif(grouping(c.CompanyName)=0,c.CompanyName,'ALL') AS Customer,
+count(*) AS Amount,
+grouping(c.CompanyName) AS ALL_IN_Customer,
+grouping (e.LastName+' '+e.FirstName) AS ALL_IN_Seller
+from Orders o
+left join Customers c ON c.CustomerID = o.CustomerID
+left join Employees e ON e.EmployeeID = o.EmployeeID
+WHERE year(o.OrderDate)=1998
+GROUP BY grouping sets (c.CompanyName, (e.LastName+' '+e.FirstName),())
+ORDER BY count(*) DESC 
+
+--3.2.4--
+if exists (select 1 from #Person)
+drop table #Person
+
+create table #Person (
+    Person varchar(50),
+    Type varchar(50),
+    City varchar(50),)
+
+insert into #Person (Person, Type, City)
+select
+    ContactName,'Customer',City
+from Customers
+
+insert into #Person (Person, Type, City)
+select
+    FirstName+' '+LastName,'Employee',City
+from Employees
+
+select *
+from #Person p
+where 1=1
+and p.City in (
+        SELECT DISTINCT e.city
+        FROM Employees e,Customers c
+        WHERE e.City=c.City
+)
+
+--3.2.5--
+SELECT DISTINCT c.City, c1.CustomerID
+FROM Customers c
+JOIN Customers c1 ON C1.city = c.city
+WHERE c.CustomerID<>c1.CustomerID
+ORDER BY c.City
+
+--to check the list of needed cities
+SELECT c.City, count(*) AS 'Q-ty'
+FROM Customers c
+GROUP BY c.City
+HAVING count (*)>1
+
+--3.2.6--
+SELECT e.LastName AS 'User name',
+CASE WHEN e1.LastName is NULL THEN 'Big Boss' ELSE e1.LastName END AS Boss
+FROM Employees e
+LEFT JOIN Employees e1 ON e.ReportsTo=e1.EmployeeID
