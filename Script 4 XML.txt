@@ -1,0 +1,86 @@
+-- *** SqlDbx Personal Edition ***
+-- !!! Not licensed for commercial use beyound 90 days evaluation period !!!
+-- For version limitations please check http://www.sqldbx.com/personal_edition.htm
+-- Number of queries executed: 1007, number of rows retrieved: 106336
+
+CREATE TABLE Dasha (DATA XML)
+------
+
+INSERT INTO Dasha (DATA)
+VALUES ('<breakfast_menu>
+	<food New="1">
+		<name>Belgian Waffles</name>
+		<price>$5.95</price>
+		<description>
+Two of our famous Belgian Waffles with plenty of real maple syrup
+		</description>
+		<calories>650</calories>
+	</food>
+	<food>
+		<name>Strawberry Belgian Waffles</name>
+		<price>$7.95</price>
+		<description>
+Light Belgian waffles covered with strawberries and whipped cream
+		</description>
+		<calories>900</calories>
+	</food>
+	<food New="1">
+		<name>Berry-Berry Belgian Waffles</name>
+		<price>$8.95</price>
+		<description>
+Light Belgian waffles covered with an assortment of fresh berries and whipped cream
+		</description>
+		<calories>900</calories>
+	</food>
+	<food>
+		<name>French Toast</name>
+		<price>$4.50</price>
+		<description>
+Thick slices made from our homemade sourdough bread
+		</description>
+		<calories>600</calories>
+	</food>
+	<food>
+		<name>Homestyle Breakfast</name>
+		<price>$6.95</price>
+		<description>
+Two eggs, bacon or sausage, toast, and our ever-popular hash browns
+		</description>
+		<calories>950</calories>
+	</food>
+</breakfast_menu>
+')
+
+-----
+SELECT *
+FROM Dasha
+
+---
+--xvalue
+
+--French Toast
+select
+convert(xml,Data).value('/breakfast_menu[1]/food[4]/name[1]', 'varchar(100)') as Text2Xml
+from Dasha
+
+---New - not working
+select
+convert(xml,Data).value('//food[@new]', 'varchar(100)') as Text2Xml
+from Dasha
+
+--description (for Homestyle Breakfast)
+select
+convert(xml,Data).value('/breakfast_menu[1]/food[5]/description[1]', 'varchar(100)') as Text2Xml
+from Dasha
+
+--xquery
+select 
+convert(xml,Data).query('/breakfast_menu[1]/food[4]/name[1]') as QueryXML
+from Dasha
+
+--with XMLNAMESPACES (DEFAULT 'http://ilovexml.com')
+select
+convert(xml,Data).value('/breakfast_menu[1]/food[4]/name[1]', 'varchar(25)') as FirstDishXML,
+convert(xml,Data).value('/breakfast_menu[1]/food[4]/name[1]', 'varchar(100)') as Text2Xml
+,convert(xml,Data).query('/breakfast_menu[1]/food[4]/name[1]') as QueryXML
+from Dasha
